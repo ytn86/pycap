@@ -56,7 +56,8 @@ class Parser(object):
             return hdr.protocol
         elif hdr.version == 6:
             return hdr.nextHdr
-
+        else:
+            return -1
         
     # Future : improve readability
     def parse(self, pkt):
@@ -71,8 +72,8 @@ class Parser(object):
         
         hds.append(hdr)
         proto = self.getNextProtocol(hdr)
-        
-        if self.l4Parsers[proto] is not None:
+
+        if proto != -1 and self.l4Parsers[proto] is not None:
             hds.append(self.l4Parsers[proto](pkt[(14+hlen):]))
         else:
             hds[1].payload = pkt[(14+hlen):]
