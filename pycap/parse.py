@@ -9,8 +9,7 @@ from .header.l4 import *
 from .header.udp import *
 
 class Parser(object):
- 
-    
+     
     def __init__(self):
         self.l4Parsers = [None]*255
         self.registerL4Parser()
@@ -36,39 +35,49 @@ class Parser(object):
         return struct.unpack('BBB', val)[0]
 
 
+    def parseL3Hdr(self, pkt, etherType):
+
+        if etherType == 0x800: # IPv4
+            hdr = self.parseIPv4Hdr(pkt)
+            hlen = hdr.hdrLen * 4
+            return hdr, hlen       
+ 
+        elif etherType == 0x86DD: #IPv6
+            hdr = self.parseIPv6Hdr(pkt)
+            hlen = 40
+            return hdr, hlen
+
+        else:
+            return None, -1
+
+        
+    def getNextProtocol(self, hdr):
+        if hdr.version == 4:
+            return hdr.protocol
+        elif hdr.version == 6:
+            return hdr.nextHdr
+
+        
     # Future : improve readability
     def parse(self, pkt):
         hds = []
         hds.append(self.parseEthHdr(pkt[0:14]))
 
-        if hds[0].etherType == 0x800: # IPv4
+        hdr, hlen = self.parseL3Hdr(pkt[14:], hds[0].etherType)
 
-            hds.append(self.parseIPv4Hdr(pkt[14:]))
-            hlen = hds[1].hdrLen*4;
-
-            if self.l4Parsers[hds[1].protocol] is not None:
-                hds.append(self.l4Parsers[hds[1].protocol](pkt[(14+hlen):]))
-            else:
-                hds[1].payload = pkt[(14+hlen):]
-                return hds
-
-            
-        elif hds[0].etherType == 0x86DD: # IPv6
-
-            hds.append(self.parseIPv6Hdr(pkt[14:38]))
-            if self.l4Parsers[hds[1].nextHdr] is not None:
-                hds.append(self.l4Parsers[hds[1].nextHdr](pkt[44:]))
-                # Future : adapt extnsion header
-                # e.g. Routing header, Fragment header
-            else:
-                hds[1].payload = pkt[44:]
-                return hds
-        
-        else:
+        if hdr is None:
             hds[0].payload = pkt[14:]
             return hds
         
-    
+        hds.append(hdr)
+        proto = self.getNextProtocol(hdr)
+        
+        if self.l4Parsers[proto] is not None:
+            hds.append(self.l4Parsers[proto](pkt[(14+hlen):]))
+        else:
+            hds[1].payload = pkt[(14+hlen):]
+            return hds
+                
         return hds
 
     
@@ -115,7 +124,6 @@ class Parser(object):
         header.flowLabel = tmp & 0b11111111111111111111
         header.payloadLen = self.__uh(pkt[4:6])
         header.nextHdr = self.__uB(pkt[6:7])
-        #header.protocol = self.__uB(pkt[6:7])
         header.hopLim = self.__uB(pkt[7:8])
         header.srcIP = binascii.hexlify(pkt[8:24]).decode()
         header.dstIP = binascii.hexlify(pkt[24:40]).decode()
