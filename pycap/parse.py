@@ -13,9 +13,9 @@ class Parser(object):
     
     def __init__(self):
         self.l4Parsers = [None]*255
-        self.registerIPParser()
+        self.registerL4Parser()
  
-    def registerIPParser(self):
+    def registerL4Parser(self):
         self.l4Parsers[6] = self.parseTCPHdr
         self.l4Parsers[17] = self.parseUDPHdr
         self.l4Parsers[1] = self.parseICMPHdr
