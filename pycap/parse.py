@@ -28,7 +28,7 @@ class Parser(object):
 
     
     def __uI(self, val):
-        return struct.unpack('I', val)[0]
+        return struct.unpack('>I', val)[0]
 
     
     def u6(self, val):
