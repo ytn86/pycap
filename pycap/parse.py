@@ -12,12 +12,27 @@ class Parser(object):
      
     def __init__(self):
         self.l4Parsers = [None]*255
+        self.udpParsers = [None]*65535
+        self.tcpParsers = [None]*65535
         self.registerL4Parser()
- 
+        self.registerTCPParser()
+        self.registerUDPParser()
+
+        
     def registerL4Parser(self):
         self.l4Parsers[6] = self.parseTCPHdr
         self.l4Parsers[17] = self.parseUDPHdr
         self.l4Parsers[1] = self.parseICMPHdr
+
+        
+    def registerTCPParser(self):
+        pass
+
+    
+    def registerUDPParser(self):
+        self.udpParsers[67] = self.parseDHCPHdr
+        self.udpParsers[68] = self.parseDHCPHdr
+
     
     def __uh(self, val):
         return struct.unpack('>H', val)[0]
@@ -50,7 +65,29 @@ class Parser(object):
         else:
             return None, -1
 
+
+    def parseL4Hdr(self, pkt, l3hdr):
+        if type(l3hdr) == IPv4Hdr:
+            proto = l3hdr.protocol
+
+        elif type(l3hdr) == IPv6Hdr:
+            proto = l3hdr.nextHdr
+        else:
+            return None, 0
+
+        hdr = self.l4Parsers[proto](pkt)
+
+        if type(hdr) == UDPHdr:
+            return hdr, 8
         
+        elif type(hdr) == TCPHdr:
+            return hdr, hdr.dataOffset
+        elif type(hdr) == ICMPHdr:
+            return hdr, 0
+        else:
+            return None, 0
+            
+
     def getNextProtocol(self, hdr):
         if hdr.version == 4:
             return hdr.protocol
@@ -58,29 +95,65 @@ class Parser(object):
             return hdr.nextHdr
         else:
             return -1
+
+
+    def getParseFunc(self, hdr):
+        if type(hdr) == UDPHdr:
+            if self.udpParsers[hdr.dstPort]:
+                return self.udpParsers[hdr.dstPort]
+            elif self.udpParsers[hdr.srcPort]:
+                return self.udpParsers[hdr.srcPort]
+            else:
+                return None
         
+        if type(hdr) == TCPHdr:
+            if self.tcpParsers[hdr.dstPort]:
+                return self.tcpParsers[hdr.dstPort]
+            elif self.tcpParsers[hdr.srcPort]:
+                return self.tcpParsers[hdr.srcPort]
+            else:
+                return None
+            
+
     # Future : improve readability
     def parse(self, pkt):
         hds = []
-        hds.append(self.parseEthHdr(pkt[0:14]))
 
-        hdr, hlen = self.parseL3Hdr(pkt[14:], hds[0].etherType)
+        hlen = 14        
+        hds.append(self.parseEthHdr(pkt[0:hlen]))
+
+        hdr, tmplen = self.parseL3Hdr(pkt[hlen:], hds[0].etherType)
 
         if hdr is None:
-            hds[0].payload = pkt[14:]
+            hds[0].payload = pkt[hlen:]
             return hds
-        
+
+        hlen += tmplen
         hds.append(hdr)
         proto = self.getNextProtocol(hdr)
 
         if proto != -1 and self.l4Parsers[proto] is not None:
-            hds.append(self.l4Parsers[proto](pkt[(14+hlen):]))
+            hdr, tmplen = self.parseL4Hdr(pkt[hlen:], hdr)
         else:
-            hds[1].payload = pkt[(14+hlen):]
+            hds[1].payload = pkt[(hlen):]
             return hds
-                
-        return hds
+        
+        if hdr == None:
+            hds[1].payload = pkt[(hlen):]
+            return hds
+        
+        hds.append(hdr)
 
+        hlen += tmplen
+        func = self.getParseFunc(hds[2])
+
+        if func is not None:
+            hds.append(func(pkt[hlen:]))
+        else:
+            hds[2].payload = pkt[hlen:]
+        
+        return hds
+        
     
     def parseEthHdr(self, pkt):
         header = EthHdr()
@@ -117,6 +190,7 @@ class Parser(object):
         
         return header                        
 
+    
     def parseIPv6Hdr(self, pkt):
         header = IPv6Hdr()
         tmp = self.__uI(pkt[0:4])
@@ -132,6 +206,7 @@ class Parser(object):
             pass
         
         return header
+
     
     def parseTCPHdr(self, pkt):
     
@@ -174,6 +249,7 @@ class Parser(object):
         
         return header
 
+    
     def parseICMPHdr(self, pkt):
         header = ICMPHdr()
         header.type = self.__uB(pkt[0:1])

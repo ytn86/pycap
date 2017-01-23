@@ -1,3 +1,6 @@
+from .. import util
+
+
 
 class L3Hdr(object):
     pass
@@ -20,6 +23,24 @@ class IPv4Hdr(L3Hdr):
         self.padding = None
         self.payload = None
 
+    def toString(self):
+        util.printHdrName('IPv4')
+        util.printHdr('version', self.version)
+        util.printHdr('header length', self.hdrLen)
+        util.printHdr('service type', self.serviceType)
+        util.printHdr('total length', self.totalLen)
+        util.printHdr('ident', self.ident)
+        util.printHdr('flags', self.flags)
+        util.printHdr('fragment offset', self.fragmentOffset)
+        util.printHdr('TTL', self.TTL)
+        util.printHdr('protocol', self.protocol)
+        util.printHdr('checksum', self.checksum)
+        util.printHdr('srcIP', self.srcIP)
+        util.printHdr('dstIP', self.dstIP)
+        util.printHdr('options', self.options)
+        util.printHdr('padding', self.padding)
+
+        
 class IPv6Hdr(L3Hdr):
     def __init__(self):
         self.version = None        # 4bit
@@ -27,12 +48,20 @@ class IPv6Hdr(L3Hdr):
         self.flowLabel = None      # 20bit
         self.hdrLen = None         # 16bit
         self.nextHdr = None       # 8bit
-        #self.protocol = None       # 8bit
         self.hopLim = None         # 8bit
         self.srcIP = None          # 128bit
         self.dstIP = None          # 128bit
         self.routingHdr = None     # extra Header
 
         
-        #self.protocol = self.nextHdr # alias
-        
+    def toString(self):
+        util.printHdrName('IPv6')
+        util.printHdr('version', self.version)
+        util.printHdr('traffic class', self.trafficClass)
+        util.printHdr('flow label', self.flowLabel)
+        util.printHdr('header length', self.hdrLen)
+        util.printHdr('next header', self.nextHdr)
+        util.printHdr('hop limit', self.hopLim)
+        util.printHdr('srcIP', self.srcIP)
+        util.printHdr('dstIP', self.dstIP)
+          

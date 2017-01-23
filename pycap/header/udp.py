@@ -1,3 +1,6 @@
+from .. import util
+
+
 
 class L7Hdr(object):
     pass
@@ -22,4 +25,16 @@ class DHCPHdr(L7Hdr):
         self.options = None # variable
         
 
-    
+    def toString(self):
+        util.printHdrName('DHCP')
+        util.printHdr('op', self.op)
+        util.printHdr('htype', self.htype)
+        util.printHdr('hops', self.hops)
+        util.printHdr('xid', self.xid)
+        util.printHdr('secs', self.secs)
+        util.printHdr('flags', self.flags)
+        util.printHdr('ciaddr', self.ciaddr)
+        util.printHdr('yiaddr', self.yiaddr)
+        util.printHdr('siaddr', self.siaddr)
+        util.printHdr('chaddr', self.chaddr)
+        util.printHdr('sname', self.sname)
