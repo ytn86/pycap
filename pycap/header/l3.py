@@ -64,4 +64,30 @@ class IPv6Hdr(L3Hdr):
         util.printHdr('hop limit', self.hopLim)
         util.printHdr('srcIP', self.srcIP)
         util.printHdr('dstIP', self.dstIP)
-          
+
+
+
+class ARPHdr(L3Hdr):
+    def __init__(self):
+        self.hwType = None          #16 bit
+        self.protoType = None       #16 bit
+        self.hwAddrLen = None       #8 bit
+        self.protoAddrLen = None    #8 bit
+        self.opCode = None          #16 bit
+        self.senderHwAddr = None    #48 bit
+        self.senderProtoAddr = None #32 bit
+        self.targetHwAddr = None    #48 bit
+        self.targetProtoAddr = None #32 bit
+
+
+    def toString(self):
+        util.printHdrName('ARP')
+        util.printHdr('Hardware type', self.hwType)
+        util.printHdr('protocol type', self.protoType)
+        util.printHdr('Hardware address length', self.hwAddrLen)
+        util.printHdr('protocol address length', self.protoAddrLen)
+        util.printHdr('opcode', self.opCode)
+        util.printHdr('sender hardware address', self.senderHwAddr)
+        util.printHdr('sender protocol address', self.senderProtoAddr)
+        util.printHdr('target hardware address', self.targetHwAddr)
+        util.printHdr('target protocol address', self.targetProtoAddr)
