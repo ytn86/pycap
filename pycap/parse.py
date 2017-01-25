@@ -13,9 +13,9 @@ from .header.udp import *
 class Parser(object):
      
     def __init__(self):
-        self.l4Parsers = [None]*255
-        self.udpParsers = [None]*65535
-        self.tcpParsers = [None]*65535
+        self.l4Parsers = {}
+        self.udpParsers = {}
+        self.tcpParsers = {}
         self.registerL4Parser()
         self.registerTCPParser()
         self.registerUDPParser()
@@ -27,7 +27,7 @@ class Parser(object):
         self.l4Parsers[1] = self.parseICMPHdr
 
         
-    def registerTCPParser(self):
+    def registerTCPParser(seplf):
         pass
 
     
@@ -81,8 +81,11 @@ class Parser(object):
         else:
             return None, 0
 
-        hdr = self.l4Parsers[proto](pkt)
-
+        if self.l4Parsers.get(proto):
+            hdr = self.l4Parsers[proto](pkt)
+        else:
+            return None, 0
+        
         if type(hdr) == UDPHdr:
             return hdr, 8
         
@@ -106,17 +109,17 @@ class Parser(object):
 
     def getParseFunc(self, hdr):
         if type(hdr) == UDPHdr:
-            if self.udpParsers[hdr.dstPort]:
+            if self.udpParsers.get(hdr.dstPort):
                 return self.udpParsers[hdr.dstPort]
-            elif self.udpParsers[hdr.srcPort]:
+            elif self.udpParsers.get(hdr.srcPort):
                 return self.udpParsers[hdr.srcPort]
             else:
                 return None
         
         if type(hdr) == TCPHdr:
-            if self.tcpParsers[hdr.dstPort]:
+            if self.tcpParsers.get(hdr.dstPort):
                 return self.tcpParsers[hdr.dstPort]
-            elif self.tcpParsers[hdr.srcPort]:
+            elif self.tcpParsers.get(hdr.srcPort):
                 return self.tcpParsers[hdr.srcPort]
             else:
                 return None
@@ -143,7 +146,7 @@ class Parser(object):
         hlen += tmplen        
         proto = self.getNextProtocol(hdr)
 
-        if proto != -1 and self.l4Parsers[proto] is not None:
+        if proto != -1 and self.l4Parsers.get(proto) is not None:
             hdr, tmplen = self.parseL4Hdr(pkt[hlen:], hdr)
         else:
             hds[1].payload = pkt[(hlen):]
