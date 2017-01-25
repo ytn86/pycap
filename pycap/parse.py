@@ -8,6 +8,8 @@ from .header.l3 import *
 from .header.l4 import *
 from .header.udp import *
 
+
+
 class Parser(object):
      
     def __init__(self):
@@ -62,6 +64,10 @@ class Parser(object):
             hlen = 40
             return hdr, hlen
 
+        elif etherType == 0x806:
+            hdr = self.parseARPHdr(pkt)
+            return hdr, -1
+
         else:
             return None, -1
 
@@ -82,6 +88,7 @@ class Parser(object):
         
         elif type(hdr) == TCPHdr:
             return hdr, hdr.dataOffset
+
         elif type(hdr) == ICMPHdr:
             return hdr, 0
         else:
@@ -113,7 +120,7 @@ class Parser(object):
                 return self.tcpParsers[hdr.srcPort]
             else:
                 return None
-            
+
 
     # Future : improve readability
     def parse(self, pkt):
@@ -128,8 +135,12 @@ class Parser(object):
             hds[0].payload = pkt[hlen:]
             return hds
 
-        hlen += tmplen
         hds.append(hdr)
+        
+        if tmplen == -1:
+            return hds
+        
+        hlen += tmplen        
         proto = self.getNextProtocol(hdr)
 
         if proto != -1 and self.l4Parsers[proto] is not None:
@@ -163,7 +174,7 @@ class Parser(object):
     
         return header
 
-    
+
     def parseIPv4Hdr(self, pkt):
         header = IPv4Hdr()
         tmp = self.__uB(pkt[0:1])
@@ -207,6 +218,22 @@ class Parser(object):
         
         return header
 
+
+    def parseARPHdr(self, pkt):
+        header = ARPHdr()
+
+        header.hwType = self.__uh(pkt[0:2])
+        header.protoType = self.__uh(pkt[2:4])
+        header.hwAddrLen = self.__uB(pkt[4:5])
+        header.protoAddrLen = self.__uB(pkt[5:6])
+        header.opCode = self.__uh(pkt[6:8])
+        header.senderHwAddr = binascii.hexlify(pkt[8:14]).decode()
+        header.senderProtoAddr = self.__uI(pkt[14:18])
+        header.targetHwAddr = binascii.hexlify(pkt[18:24]).decode()
+        header.targetProtoAddr = self.__uI(pkt[24:28])
+
+        return header
+        
     
     def parseTCPHdr(self, pkt):
     
@@ -229,7 +256,6 @@ class Parser(object):
         header.window = self.__uh(pkt[14:16])
         header.checksum = self.__uh(pkt[16:18])
         header.urgentPointer = self.__uh(pkt[18:20])
-        
         
         dataPos = header.dataOffset*4
         if header.dataOffset > 5:
@@ -263,13 +289,13 @@ class Parser(object):
 
     def parseDHCPHdr(self, pkt):
         header = DHCPHdr()
-        header.op =self.__uB(pkt[0:1])
-        header.htype =self.__uB(pkt[1:2])
-        header.hlen =self.__uB(pkt[2:3])
-        header.hops =self.__uB(pkt[3:4])
-        header.xid =self.__uI(pkt[4:8])
-        header.secs =self.__uh(pkt[8:10])
-        header.flags =self.__uh(pkt[10:12])
+        header.op = self.__uB(pkt[0:1])
+        header.htype = self.__uB(pkt[1:2])
+        header.hlen = self.__uB(pkt[2:3])
+        header.hops = self.__uB(pkt[3:4])
+        header.xid =s elf.__uI(pkt[4:8])
+        header.secs = self.__uh(pkt[8:10])
+        header.flags = self.__uh(pkt[10:12])
         header.ciaddr= socket.inet_ntoa(pkt[12:16])
         header.yiaddr= socket.inet_ntoa(pkt[16:20])
         header.siaddr= socket.inet_ntoa(pkt[20:24])
