@@ -37,14 +37,18 @@ class Capture(object):
         self.__promiscuous = True
 
     def prepare(self):
+
+        ifr = ifreq()
+
         self.__socket = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
         self.__socket.bind((self.__interface, ETH_P_ALL))
 
-        ifr = ifreq()
-        ifr.ifr_ifrn = self.__interface.encode()
-        fcntl.ioctl(self.__socket.fileno(), SIOCGIFFLAGS, ifr)
-        ifr.ifr_flags |= IFF_PROMISC
-        fcntl.ioctl(self.__socket.fileno(), SIOCSIFFLAGS, ifr)
+
+        if self.__promiscuous:
+            ifr.ifr_ifrn = self.__interface.encode()
+            fcntl.ioctl(self.__socket.fileno(), SIOCGIFFLAGS, ifr)
+            ifr.ifr_flags |= IFF_PROMISC
+            fcntl.ioctl(self.__socket.fileno(), SIOCSIFFLAGS, ifr)
         
 
     def capture(self):
