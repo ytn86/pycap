@@ -63,7 +63,8 @@ class UDPHdr(L4Hdr):
         util.printHdr('checksum', self.checksum)
 
 
-        
+
+# ICMP is not L4 but L3
 class ICMPHdr(L4Hdr):
     def __init__(self):
         self.type = None
