@@ -13,7 +13,7 @@ class EthHdr(L2Hdr):
         self.etherType = None
         self.payload = None
         
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('Ethernet')
         util.printHdr('srcMac', self.srcMac)
         util.printHdr('dstMac', self.dstMac)

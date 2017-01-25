@@ -26,7 +26,7 @@ class TCPHdr(L4Hdr):
         self.padding = None
         self.payload = None
 
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('TCP')
         util.printHdr('srcPort', self.srcPort)
         util.printHdr('dstPort', self.dstPort)
@@ -55,7 +55,7 @@ class UDPHdr(L4Hdr):
         self.payload = None
         
         
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('UDP')
         util.printHdr('srcPort', self.srcPort)
         util.printHdr('dstPort', self.dstPort)
@@ -73,7 +73,7 @@ class ICMPHdr(L4Hdr):
         self.InternetHdr = None
 
 
-    def toStirng(self):
+    def printHdr(self):
         util.printHdrName('ICMP')
         util.printHdr('type', self.type)
         util.printHdr('code', self.code)

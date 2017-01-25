@@ -23,7 +23,7 @@ class IPv4Hdr(L3Hdr):
         self.padding = None
         self.payload = None
 
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('IPv4')
         util.printHdr('version', self.version)
         util.printHdr('header length', self.hdrLen)
@@ -54,7 +54,7 @@ class IPv6Hdr(L3Hdr):
         self.routingHdr = None     # extra Header
 
         
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('IPv6')
         util.printHdr('version', self.version)
         util.printHdr('traffic class', self.trafficClass)
@@ -80,7 +80,7 @@ class ARPHdr(L3Hdr):
         self.targetProtoAddr = None #32 bit
 
 
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('ARP')
         util.printHdr('Hardware type', self.hwType)
         util.printHdr('protocol type', self.protoType)

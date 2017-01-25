@@ -25,7 +25,7 @@ class DHCPHdr(L7Hdr):
         self.options = None # variable
         
 
-    def toString(self):
+    def printHdr(self):
         util.printHdrName('DHCP')
         util.printHdr('op', self.op)
         util.printHdr('htype', self.htype)
