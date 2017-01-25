@@ -263,17 +263,17 @@ class Parser(object):
 
     def parseDHCPHdr(self, pkt):
         header = DHCPHdr()
-        header.op = uB(pkt[0:1])
-        header.htype = uB(pkt[1:2])
-        header.hlen = uB(pkt[2:3])
-        header.hops = uB(pkt[3:4])
-        header.xid = uI(pkt[4:8])
-        header.secs = uh(pkt[8:10])
-        header.flags = uh(pkt[10:12])
-        header.ciaddr= inet_ntoa(pkt[12:16])
-        header.yiaddr= inet_ntoa(pkt[16:20])
-        header.siaddr= inet_ntoa(pkt[20:24])
-        header.giaddr= inet_ntoa(pkt[24:28])
+        header.op =self.__uB(pkt[0:1])
+        header.htype =self.__uB(pkt[1:2])
+        header.hlen =self.__uB(pkt[2:3])
+        header.hops =self.__uB(pkt[3:4])
+        header.xid =self.__uI(pkt[4:8])
+        header.secs =self.__uh(pkt[8:10])
+        header.flags =self.__uh(pkt[10:12])
+        header.ciaddr= socket.inet_ntoa(pkt[12:16])
+        header.yiaddr= socket.inet_ntoa(pkt[16:20])
+        header.siaddr= socket.inet_ntoa(pkt[20:24])
+        header.giaddr= socket.inet_ntoa(pkt[24:28])
         header.chaddr = binascii.hexlify(pkt[28:44]).decode()
         header.sname = pkt[44:108]
         header.file = pkt[108:236]
