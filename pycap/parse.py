@@ -293,7 +293,7 @@ class Parser(object):
         header.htype = self.__uB(pkt[1:2])
         header.hlen = self.__uB(pkt[2:3])
         header.hops = self.__uB(pkt[3:4])
-        header.xid =s elf.__uI(pkt[4:8])
+        header.xid = self.__uI(pkt[4:8])
         header.secs = self.__uh(pkt[8:10])
         header.flags = self.__uh(pkt[10:12])
         header.ciaddr= socket.inet_ntoa(pkt[12:16])
